@@ -4,42 +4,45 @@ from core.agents import route_agent, rag_agent, search_agent, summary_agent
 
 # 构建状态图
 workflow = StateGraph(AgentState)
-
-# 注册所有Agent节点
+# 注册节点
 workflow.add_node("router", route_agent)
 workflow.add_node("rag_worker", rag_agent)
 workflow.add_node("search_worker", search_agent)
 workflow.add_node("summary", summary_agent)
-
-# 入口节点
 workflow.set_entry_point("router")
 
-# 路由分支逻辑
+# 路由函数：只返回原始标签rag/search/both/direct
 def route_condition(state: AgentState):
-    target = state["route_target"]
-    if target == "rag":
-        return "rag_worker"
-    elif target == "search":
-        return "search_worker"
-    elif target == "both":
-        return "rag_worker"
-    elif target == "direct":
-        return "summary"
+    return state["route_target"]
 
-# 分支跳转
-workflow.add_conditional_edges("router", route_condition, {
-    "rag_worker": "rag_worker",
-    "search_worker": "search_worker",
-    "summary": "summary"
-})
+# 第一层：router出口映射，名称一一对应真实节点
+workflow.add_conditional_edges(
+    source="router",
+    path=route_condition,
+    path_map={
+        "direct": "summary",
+        "rag": "rag_worker",
+        "search": "search_worker",
+        "both": "rag_worker"
+    }
+)
 
-# both分支：先执行RAG，再执行搜索，最后汇总
-workflow.add_edge("rag_worker", "search_worker")
-# 单分支执行完统一到汇总节点
+# 第二层：rag执行完二次判断，区分纯rag / both混合
+def after_rag_condition(state: AgentState):
+    return state["route_target"]
+
+workflow.add_conditional_edges(
+    source="rag_worker",
+    path=after_rag_condition,
+    path_map={
+        "rag": "summary",        # 纯知识库，检索完直接汇总
+        "both": "search_worker"  # 混合场景，检索后再搜索
+    }
+)
+
+# 搜索完成统一汇总
 workflow.add_edge("search_worker", "summary")
-workflow.add_edge("rag_worker", "summary")
-# 汇总完成结束流程
+# 汇总结束流程
 workflow.add_edge("summary", END)
 
-# 编译可执行图
 multi_agent_graph = workflow.compile()
