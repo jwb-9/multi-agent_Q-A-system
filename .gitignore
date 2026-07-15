@@ -1,0 +1,69 @@
+# Python 字节缓存
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# 虚拟环境
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+
+# 环境变量配置（密钥不提交）
+.env
+.env.local
+.env.dev
+.env.prod
+
+# Chroma 向量数据库持久化文件
+chroma_db/
+*.sqlite3
+*.sqlite
+
+# 日志文件
+*.log
+logs/
+uvicorn.log
+
+# 系统缓存与临时文件
+.DS_Store
+Thumbs.db
+*.tmp
+*.temp
+.cache/
+
+# IDE 配置文件
+# VSCode
+.vscode/
+*.swp
+*.swo
+.idea/
+# PyCharm
+*.iml
+*.iws
+*.ipr
+out/
+.idea/
+
+# 下载/临时数据
+tmp/
+temp/
+download/
