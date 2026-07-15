@@ -1,10 +1,10 @@
 from langchain_chroma import Chroma
 from langchain_ollama import OllamaEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-import os
-from dotenv import load_dotenv
+from core.config import settings
+from core.logger import logger
 
-load_dotenv()
+logger.info("开始初始化向量知识库")
 
 # 示例本地文档数据
 docs_text = """
@@ -18,14 +18,15 @@ chunks = text_splitter.split_text(docs_text)
 
 # 使用Ollama本地嵌入模型
 embedding = OllamaEmbeddings(
-    base_url=os.getenv("OLLAMA_BASE_URL"),
-    model=os.getenv("EMBED_MODEL")
+    base_url=settings.OLLAMA_BASE_URL,
+    model=settings.EMBED_MODEL
 )
 
 # 持久化向量库
 Chroma.from_texts(
     texts=chunks,
     embedding=embedding,
-    persist_directory="./chroma_db"
+    persist_directory=settings.CHROMA_PERSIST_DIR
 )
+logger.info("本地知识库初始化完成")
 print("本地知识库初始化完成")

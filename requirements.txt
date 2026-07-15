@@ -8,4 +8,4 @@ fastapi
 uvicorn
 python-dotenv
 tavily-python
-duckduckgo-search
+ddgs
