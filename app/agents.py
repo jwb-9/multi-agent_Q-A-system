@@ -85,7 +85,8 @@ def planner_agent(state):
     task_list = []
     raw_tasks = res.get("task_list", []) if isinstance(res, dict) else res.task_list
     for t in raw_tasks:
-        if t.get("tool_name") in VALID_TOOL_NAMES:
+        tool_name = t.get("tool_name") if isinstance(t, dict) else t.tool_name
+        if tool_name in VALID_TOOL_NAMES:
             task_list.append(t)
     return {"task_plan": task_list}
 
@@ -96,11 +97,16 @@ def tool_exec_agent(state):
     rag_total = ""
     search_total = ""
     for task in task_list:
-        tool_name = task.get("tool_name")
+        if isinstance(task, dict):
+            tool_name = task.get("tool_name")
+            task_query = task.get("query", "")
+        else:
+            tool_name = task.tool_name
+            task_query = task.query
+
         if not tool_name or tool_name not in TOOL_MAP:
             continue
         tool: BaseTool = TOOL_MAP[tool_name]
-        task_query = task["query"]
         logger.info(f"执行工具:{tool_name}, query:{task_query}")
         tool_result = tool.run(task_query)
         tool_records.append({
